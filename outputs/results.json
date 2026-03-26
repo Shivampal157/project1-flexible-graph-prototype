@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-03-27 01:46:55",
+  "generated_at": "2026-03-27 02:09:33",
   "runs": [
     {
       "scenario": "regular_grid_32x32",
       "strategy": "knn",
-      "runtime_s": 0.113,
+      "runtime_s": 0.066,
       "n_nodes": 1024,
       "n_edges": 8192,
       "isolated_nodes": 0,
@@ -25,12 +25,13 @@
         "mean": 0.04005216627512742,
         "p95": 0.045619792334616084,
         "max": 0.09123958466923202
-      }
+      },
+      "preview_image": "figures\\regular_grid_32x32__knn.png"
     },
     {
       "scenario": "regular_grid_32x32",
       "strategy": "radius",
-      "runtime_s": 0.2128,
+      "runtime_s": 0.1431,
       "n_nodes": 1024,
       "n_edges": 19092,
       "isolated_nodes": 0,
@@ -51,12 +52,13 @@
         "mean": 0.0569746873988102,
         "p95": 0.07213122508063842,
         "max": 0.07213122508063846
-      }
+      },
+      "preview_image": "figures\\regular_grid_32x32__radius.png"
     },
     {
       "scenario": "regular_grid_32x32",
       "strategy": "hybrid",
-      "runtime_s": 0.1092,
+      "runtime_s": 0.0976,
       "n_nodes": 1024,
       "n_edges": 11652,
       "isolated_nodes": 0,
@@ -77,12 +79,13 @@
         "mean": 0.04729698053708675,
         "p95": 0.06451612903225812,
         "max": 0.06451612903225812
-      }
+      },
+      "preview_image": "figures\\regular_grid_32x32__hybrid.png"
     },
     {
       "scenario": "jittered_grid_32x32",
       "strategy": "knn",
-      "runtime_s": 0.0669,
+      "runtime_s": 0.086,
       "n_nodes": 1024,
       "n_edges": 8192,
       "isolated_nodes": 0,
@@ -103,12 +106,13 @@
         "mean": 0.03878082880081157,
         "p95": 0.058487786775349306,
         "max": 0.08451408658322888
-      }
+      },
+      "preview_image": "figures\\jittered_grid_32x32__knn.png"
     },
     {
       "scenario": "jittered_grid_32x32",
       "strategy": "radius",
-      "runtime_s": 0.1615,
+      "runtime_s": 0.132,
       "n_nodes": 1024,
       "n_edges": 17714,
       "isolated_nodes": 0,
@@ -129,12 +133,13 @@
         "mean": 0.054327862123726214,
         "p95": 0.0780053143016858,
         "max": 0.07999363575187293
-      }
+      },
+      "preview_image": "figures\\jittered_grid_32x32__radius.png"
     },
     {
       "scenario": "jittered_grid_32x32",
       "strategy": "hybrid",
-      "runtime_s": 0.0903,
+      "runtime_s": 0.1009,
       "n_nodes": 1024,
       "n_edges": 13504,
       "isolated_nodes": 0,
@@ -155,12 +160,13 @@
         "mean": 0.04783861512181512,
         "p95": 0.06839013891947908,
         "max": 0.06999640186640302
-      }
+      },
+      "preview_image": "figures\\jittered_grid_32x32__hybrid.png"
     },
     {
       "scenario": "sparse_clusters",
       "strategy": "knn",
-      "runtime_s": 0.0156,
+      "runtime_s": 0.0281,
       "n_nodes": 320,
       "n_edges": 2560,
       "isolated_nodes": 0,
@@ -181,12 +187,13 @@
         "mean": 0.018574191850577744,
         "p95": 0.038077671617665655,
         "max": 0.07711267813985706
-      }
+      },
+      "preview_image": "figures\\sparse_clusters__knn.png"
     },
     {
       "scenario": "sparse_clusters",
       "strategy": "radius",
-      "runtime_s": 0.0967,
+      "runtime_s": 0.1484,
       "n_nodes": 320,
       "n_edges": 7334,
       "isolated_nodes": 0,
@@ -207,12 +214,13 @@
         "mean": 0.030327792040808575,
         "p95": 0.05673570912626984,
         "max": 0.07992933172325999
-      }
+      },
+      "preview_image": "figures\\sparse_clusters__radius.png"
     },
     {
       "scenario": "sparse_clusters",
       "strategy": "hybrid",
-      "runtime_s": 0.099,
+      "runtime_s": 0.0944,
       "n_nodes": 320,
       "n_edges": 7258,
       "isolated_nodes": 0,
@@ -233,7 +241,8 @@
         "mean": 0.029869265065283684,
         "p95": 0.0554163874914527,
         "max": 0.06993202887202916
-      }
+      },
+      "preview_image": "figures\\sparse_clusters__hybrid.png"
     }
   ]
 }

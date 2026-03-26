@@ -35,6 +35,11 @@ row = next(
     if r["scenario"] == selected_scenario and r["strategy"] == selected_strategy
 )
 
+preview_rel = row.get("preview_image")
+if preview_rel:
+    st.subheader("Graph preview")
+    st.image(root / "outputs" / preview_rel, use_container_width=True)
+
 st.subheader("Key Metrics")
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Nodes", row["n_nodes"])

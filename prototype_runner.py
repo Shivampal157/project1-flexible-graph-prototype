@@ -16,6 +16,84 @@ class Scenario:
     coords: np.ndarray
 
 
+def plot_graph_preview(
+    coords: np.ndarray,
+    g: nx.DiGraph,
+    out_path: Path,
+    title: str,
+    max_edges: int = 1200,
+    seed: int = 0,
+) -> None:
+    """Save a small 2D visualization of the constructed graph.
+
+    This is intended for proposal/demo evidence, so we intentionally:
+    - sample edges for speed/readability,
+    - draw edges as line segments (no arrows),
+    - scale node size by total degree (in+out).
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.collections import LineCollection
+
+    n = g.number_of_nodes()
+    if n == 0:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text("", encoding="utf-8")
+        return
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(6.5, 6.5), dpi=150)
+    ax.set_aspect("equal", adjustable="datalim")
+
+    # Node degree for sizing/coloring.
+    deg = np.array(
+        [g.in_degree(i) + g.out_degree(i) for i in g.nodes()],
+        dtype=float,
+    )
+    deg_max = float(deg.max(initial=0.0))
+    deg_norm = deg / deg_max if deg_max > 0 else deg
+
+    node_sizes = 20.0 + 110.0 * deg_norm
+    scatter = ax.scatter(
+        coords[:, 0],
+        coords[:, 1],
+        c=deg,
+        s=node_sizes,
+        cmap="viridis",
+        edgecolors="none",
+        zorder=3,
+    )
+
+    # Edge sampling for speed/readability.
+    edges = list(g.edges())
+    if len(edges) > max_edges:
+        rng = np.random.default_rng(seed)
+        edges_idx = rng.choice(len(edges), size=max_edges, replace=False)
+        edges = [edges[i] for i in edges_idx]
+
+    # Build segments for LineCollection: shape (E,2,2)
+    if edges:
+        segs = np.stack(
+            [[coords[u], coords[v]] for (u, v) in edges], axis=0
+        )
+        lc = LineCollection(
+            segs,
+            colors="black",
+            linewidths=0.25,
+            alpha=0.25,
+            zorder=1,
+        )
+        ax.add_collection(lc)
+
+    ax.set_xlim(float(coords[:, 0].min()) - 0.05, float(coords[:, 0].max()) + 0.05)
+    ax.set_ylim(float(coords[:, 1].min()) - 0.05, float(coords[:, 1].max()) + 0.05)
+    ax.set_title(title)
+
+    fig.colorbar(scatter, ax=ax, fraction=0.045, pad=0.02, label="degree")
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+
+
 def make_regular_grid(n_side: int = 32) -> np.ndarray:
     xs, ys = np.meshgrid(
         np.linspace(0.0, 1.0, n_side), np.linspace(0.0, 1.0, n_side)
@@ -166,11 +244,13 @@ def run() -> dict:
     }
 
     rows = []
+    preview_images = []
     for sc in scenarios:
         for name, fn in strategies.items():
             t0 = time.perf_counter()
             g = fn(sc.coords)
             dt = time.perf_counter() - t0
+
             rows.append(
                 {
                     "scenario": sc.name,
@@ -179,7 +259,18 @@ def run() -> dict:
                     **graph_metrics(g),
                 }
             )
-    return {"generated_at": time.strftime("%Y-%m-%d %H:%M:%S"), "runs": rows}
+            preview_images.append(
+                {
+                    "scenario": sc.name,
+                    "strategy": name,
+                    "preview_path": None,  # filled in later
+                }
+            )
+
+    return {
+        "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "runs": rows,
+    }
 
 
 def write_report(data: dict, output_dir: Path) -> None:
@@ -206,9 +297,51 @@ def write_report(data: dict, output_dir: Path) -> None:
     )
 
 
+def _attach_previews(
+    data: dict, output_dir: Path, coords_by_key: dict[tuple[str, str], np.ndarray]
+) -> None:
+    figures_dir = output_dir / "figures"
+    figures_dir.mkdir(parents=True, exist_ok=True)
+
+    # Update data["runs"] in-place: add `preview_image` per run.
+    for r in data["runs"]:
+        scenario = r["scenario"]
+        strategy = r["strategy"]
+        coords = coords_by_key[(scenario, strategy)]
+        # Rebuild graph from coords using same naming conventions as run().
+        # We keep this deterministic and aligned with the metrics.
+        if strategy == "knn":
+            g = build_graph_knn(coords, k=8)
+        elif strategy == "radius":
+            g = build_graph_radius(coords, radius=0.08)
+        elif strategy == "hybrid":
+            g = build_graph_hybrid(coords, radius=0.07, k_fallback=6)
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}")
+
+        out_path = figures_dir / f"{scenario}__{strategy}.png"
+        title = f"{scenario} ({strategy})"
+        plot_graph_preview(coords, g, out_path=out_path, title=title)
+        r["preview_image"] = str(Path("figures") / out_path.name)
+
+
 if __name__ == "__main__":
     out = Path(__file__).resolve().parent / "outputs"
     report = run()
+    # Attach preview images based on the same scenarios/strategies.
+    # This is done before writing results.json so UI can load images.
+    # Reconstruct coordinate sets deterministically (same as run()).
+    coords_by_key: dict[tuple[str, str], np.ndarray] = {}
+    scenarios = [
+        Scenario("regular_grid_32x32", make_regular_grid(32)),
+        Scenario("jittered_grid_32x32", make_jittered_grid(32, seed=7)),
+        Scenario("sparse_clusters", make_sparse_clusters(seed=11)),
+    ]
+    for sc in scenarios:
+        for strat in ["knn", "radius", "hybrid"]:
+            coords_by_key[(sc.name, strat)] = sc.coords
+
+    _attach_previews(report, out, coords_by_key=coords_by_key)
     write_report(report, out)
     print(f"Saved report to: {out}")
 
