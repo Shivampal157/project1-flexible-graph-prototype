@@ -8,7 +8,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Flexible Graph Prototype", layout="wide")
 st.title("Flexible Graph Construction Prototype")
-st.caption("Quick UI for proposal video demo")
+st.caption("Proposal evidence UI: compare coordinate regimes + graph-building strategies")
 
 root = Path(__file__).resolve().parent
 results_path = root / "outputs" / "results.json"
@@ -23,11 +23,12 @@ runs = data["runs"]
 scenarios = sorted({r["scenario"] for r in runs})
 strategies = sorted({r["strategy"] for r in runs})
 
-col1, col2 = st.columns(2)
-with col1:
-    selected_scenario = st.selectbox("Scenario", scenarios)
-with col2:
-    selected_strategy = st.selectbox("Strategy", strategies)
+st.sidebar.header("Demo Controls")
+st.sidebar.caption("Pick one scenario + one strategy.")
+st.sidebar.write("If you update outputs, re-run: `python prototype_runner.py`.")
+
+selected_scenario = st.sidebar.selectbox("Scenario", scenarios)
+selected_strategy = st.sidebar.selectbox("Strategy", strategies)
 
 row = next(
     r
@@ -36,21 +37,24 @@ row = next(
 )
 
 preview_rel = row.get("preview_image")
-if preview_rel:
-    st.subheader("Graph preview")
-    # Keep preview smaller for proposal video screenshots (avoid huge layout jumps).
-    st.image(
-        root / "outputs" / preview_rel,
-        use_container_width=False,
-        width=650,
-    )
+col_preview, col_metrics = st.columns(2, gap="large")
 
-st.subheader("Key Metrics")
-k1, k2, k3, k4 = st.columns(4)
-k1.metric("Nodes", row["n_nodes"])
-k2.metric("Edges", row["n_edges"])
-k3.metric("Isolated nodes", row["isolated_nodes"])
-k4.metric("Weak components", row["weak_components"])
+with col_preview:
+    if preview_rel:
+        st.subheader("Graph preview")
+        st.image(
+            root / "outputs" / preview_rel,
+            use_container_width=False,
+            width=520,
+        )
+
+with col_metrics:
+    st.subheader("Key Metrics")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Nodes", row["n_nodes"])
+    k2.metric("Edges", row["n_edges"])
+    k3.metric("Isolated nodes", row["isolated_nodes"])
+    k4.metric("Weak components", row["weak_components"])
 
 st.subheader("Degree stats")
 out_deg = row["out_degree"]
@@ -74,6 +78,12 @@ c4.metric("Edge p95", f"{edge_len['p95']:.4f}")
 c5.metric("Edge max", f"{edge_len['max']:.4f}")
 
 st.metric("Runtime (s)", row["runtime_s"])
+
+# Small guidance text so the demo looks intentional (not just dumped numbers).
+st.caption(
+    "Higher p95 degrees/edge-lengths usually indicate denser neighborhoods; "
+    "for sparse/irregular inputs, isolated nodes and weak components should be kept low."
+)
 
 st.subheader("All runs (table)")
 
