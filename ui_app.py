@@ -38,7 +38,12 @@ row = next(
 preview_rel = row.get("preview_image")
 if preview_rel:
     st.subheader("Graph preview")
-    st.image(root / "outputs" / preview_rel, use_container_width=True)
+    # Keep preview smaller for proposal video screenshots (avoid huge layout jumps).
+    st.image(
+        root / "outputs" / preview_rel,
+        use_container_width=False,
+        width=650,
+    )
 
 st.subheader("Key Metrics")
 k1, k2, k3, k4 = st.columns(4)
