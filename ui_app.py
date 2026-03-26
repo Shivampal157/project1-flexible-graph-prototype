@@ -19,6 +19,7 @@ if not results_path.exists():
 
 data = json.loads(results_path.read_text(encoding="utf-8"))
 runs = data["runs"]
+observations = data.get("observations", [])
 
 scenarios = sorted({r["scenario"] for r in runs})
 strategies = sorted({r["strategy"] for r in runs})
@@ -84,6 +85,10 @@ st.caption(
     "Higher p95 degrees/edge-lengths usually indicate denser neighborhoods; "
     "for sparse/irregular inputs, isolated nodes and weak components should be kept low."
 )
+
+if observations:
+    st.subheader("Key observations")
+    st.markdown("\n".join([f"- {o}" for o in observations]))
 
 st.subheader("All runs (table)")
 

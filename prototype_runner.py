@@ -292,9 +292,70 @@ def write_report(data: dict, output_dir: Path) -> None:
             f"{r['isolated_nodes']} | {r['weak_components']} | {r['out_degree']['p95']:.2f} | {r['runtime_s']:.4f} |"
         )
 
+    observations = data.get("observations", [])
+    if observations:
+        lines.append("")
+        lines.append("## Key observations")
+        lines.append("")
+        for obs in observations:
+            lines.append(f"- {obs}")
+
     (output_dir / "results.md").write_text(
         "\n".join(lines) + "\n", encoding="utf-8"
     )
+
+
+def _select_best_strategy(rows: list[dict]) -> dict:
+    """Pick best strategy by connectivity first, then runtime."""
+    return min(
+        rows,
+        key=lambda r: (
+            r["isolated_nodes"],
+            r["weak_components"],
+            r["runtime_s"],
+        ),
+    )
+
+
+def compute_observations(data: dict) -> list[str]:
+    scenarios = sorted({r["scenario"] for r in data["runs"]})
+    observations: list[str] = []
+
+    for sc in scenarios:
+        rows = [r for r in data["runs"] if r["scenario"] == sc]
+        best = _select_best_strategy(rows)
+
+        radius_row = next(
+            (r for r in rows if r["strategy"] == "radius"), None
+        )
+        if radius_row is not None:
+            densest = max(rows, key=lambda r: r["n_edges"])
+            observations.append(
+                f"{sc}: best connectivity is `{best['strategy']}` "
+                f"(isolated={best['isolated_nodes']}, weak_components={best['weak_components']}, "
+                f"runtime={best['runtime_s']:.3f}s). "
+                f"Denser graphs (max edges) come from `{densest['strategy']}` (n_edges={densest['n_edges']}); "
+                f"radius has n_edges={radius_row['n_edges']}."
+            )
+        else:
+            observations.append(
+                f"{sc}: best connectivity is `{best['strategy']}` "
+                f"(isolated={best['isolated_nodes']}, weak_components={best['weak_components']})."
+            )
+
+    # Global quick summary: fastest strategy by average runtime.
+    strategies = sorted({r["strategy"] for r in data["runs"]})
+    fastest = min(
+        strategies,
+        key=lambda s: float(
+            np.mean([r["runtime_s"] for r in data["runs"] if r["strategy"] == s])
+        ),
+    )
+    observations.append(
+        f"Overall: `{fastest}` is the fastest strategy on average runtime across scenarios."
+    )
+
+    return observations
 
 
 def _attach_previews(
@@ -342,6 +403,9 @@ if __name__ == "__main__":
             coords_by_key[(sc.name, strat)] = sc.coords
 
     _attach_previews(report, out, coords_by_key=coords_by_key)
+
+    # Attach short, human-readable observations for proposal/video evidence.
+    report["observations"] = compute_observations(report)
     write_report(report, out)
     print(f"Saved report to: {out}")
 

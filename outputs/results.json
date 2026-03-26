@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-03-27 02:09:33",
+  "generated_at": "2026-03-27 02:37:09",
   "runs": [
     {
       "scenario": "regular_grid_32x32",
       "strategy": "knn",
-      "runtime_s": 0.066,
+      "runtime_s": 0.0962,
       "n_nodes": 1024,
       "n_edges": 8192,
       "isolated_nodes": 0,
@@ -31,7 +31,7 @@
     {
       "scenario": "regular_grid_32x32",
       "strategy": "radius",
-      "runtime_s": 0.1431,
+      "runtime_s": 0.1371,
       "n_nodes": 1024,
       "n_edges": 19092,
       "isolated_nodes": 0,
@@ -58,7 +58,7 @@
     {
       "scenario": "regular_grid_32x32",
       "strategy": "hybrid",
-      "runtime_s": 0.0976,
+      "runtime_s": 0.1017,
       "n_nodes": 1024,
       "n_edges": 11652,
       "isolated_nodes": 0,
@@ -85,7 +85,7 @@
     {
       "scenario": "jittered_grid_32x32",
       "strategy": "knn",
-      "runtime_s": 0.086,
+      "runtime_s": 0.0565,
       "n_nodes": 1024,
       "n_edges": 8192,
       "isolated_nodes": 0,
@@ -112,7 +112,7 @@
     {
       "scenario": "jittered_grid_32x32",
       "strategy": "radius",
-      "runtime_s": 0.132,
+      "runtime_s": 0.1975,
       "n_nodes": 1024,
       "n_edges": 17714,
       "isolated_nodes": 0,
@@ -139,7 +139,7 @@
     {
       "scenario": "jittered_grid_32x32",
       "strategy": "hybrid",
-      "runtime_s": 0.1009,
+      "runtime_s": 0.1576,
       "n_nodes": 1024,
       "n_edges": 13504,
       "isolated_nodes": 0,
@@ -166,7 +166,7 @@
     {
       "scenario": "sparse_clusters",
       "strategy": "knn",
-      "runtime_s": 0.0281,
+      "runtime_s": 0.0206,
       "n_nodes": 320,
       "n_edges": 2560,
       "isolated_nodes": 0,
@@ -193,7 +193,7 @@
     {
       "scenario": "sparse_clusters",
       "strategy": "radius",
-      "runtime_s": 0.1484,
+      "runtime_s": 0.0993,
       "n_nodes": 320,
       "n_edges": 7334,
       "isolated_nodes": 0,
@@ -220,7 +220,7 @@
     {
       "scenario": "sparse_clusters",
       "strategy": "hybrid",
-      "runtime_s": 0.0944,
+      "runtime_s": 0.1193,
       "n_nodes": 320,
       "n_edges": 7258,
       "isolated_nodes": 0,
@@ -244,5 +244,11 @@
       },
       "preview_image": "figures\\sparse_clusters__hybrid.png"
     }
+  ],
+  "observations": [
+    "jittered_grid_32x32: best connectivity is `knn` (isolated=0, weak_components=1, runtime=0.057s). Denser graphs (max edges) come from `radius` (n_edges=17714); radius has n_edges=17714.",
+    "regular_grid_32x32: best connectivity is `knn` (isolated=0, weak_components=1, runtime=0.096s). Denser graphs (max edges) come from `radius` (n_edges=19092); radius has n_edges=19092.",
+    "sparse_clusters: best connectivity is `knn` (isolated=0, weak_components=7, runtime=0.021s). Denser graphs (max edges) come from `radius` (n_edges=7334); radius has n_edges=7334.",
+    "Overall: `knn` is the fastest strategy on average runtime across scenarios."
   ]
 }
