@@ -43,19 +43,53 @@ k3.metric("Isolated nodes", row["isolated_nodes"])
 k4.metric("Weak components", row["weak_components"])
 
 st.subheader("Degree stats")
-c1, c2 = st.columns(2)
-with c1:
-    st.json({"out_degree": row["out_degree"]})
-with c2:
-    st.json({"in_degree": row["in_degree"]})
+out_deg = row["out_degree"]
+in_deg = row["in_degree"]
+
+o1, o2, o3 = st.columns(3)
+o1.metric("Out p95", f"{out_deg['p95']:.2f}")
+o2.metric("Out median", f"{out_deg['median']:.2f}")
+o3.metric("Out max", f"{out_deg['max']:.2f}")
+
+i1, i2, i3 = st.columns(3)
+i1.metric("In p95", f"{in_deg['p95']:.2f}")
+i2.metric("In median", f"{in_deg['median']:.2f}")
+i3.metric("In max", f"{in_deg['max']:.2f}")
 
 st.subheader("Edge length + runtime")
-c3, c4 = st.columns(2)
-with c3:
-    st.json({"edge_length": row["edge_length"]})
-with c4:
-    st.metric("Runtime (s)", row["runtime_s"])
+c3, c4, c5 = st.columns(3)
+edge_len = row["edge_length"]
+c3.metric("Edge mean", f"{edge_len['mean']:.4f}")
+c4.metric("Edge p95", f"{edge_len['p95']:.4f}")
+c5.metric("Edge max", f"{edge_len['max']:.4f}")
+
+st.metric("Runtime (s)", row["runtime_s"])
 
 st.subheader("All runs (table)")
-st.dataframe(runs, use_container_width=True)
+
+# Flatten dict metrics for a readable table (avoid huge json-like cells).
+table_rows = []
+for r in runs:
+    out_deg = r["out_degree"]
+    in_deg = r["in_degree"]
+    edge_len = r["edge_length"]
+    table_rows.append(
+        {
+            "scenario": r["scenario"],
+            "strategy": r["strategy"],
+            "runtime_s": r["runtime_s"],
+            "n_nodes": r["n_nodes"],
+            "n_edges": r["n_edges"],
+            "isolated_nodes": r["isolated_nodes"],
+            "weak_components": r["weak_components"],
+            "out_deg_median": out_deg["median"],
+            "out_deg_p95": out_deg["p95"],
+            "in_deg_median": in_deg["median"],
+            "in_deg_p95": in_deg["p95"],
+            "edge_len_mean": edge_len["mean"],
+            "edge_len_p95": edge_len["p95"],
+        }
+    )
+
+st.dataframe(table_rows, use_container_width=True, hide_index=True)
 
