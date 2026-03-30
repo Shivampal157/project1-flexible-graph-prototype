@@ -170,18 +170,41 @@ def build_graph_radius(
 def build_graph_hybrid(
     coords: np.ndarray, radius: float = 0.07, k_fallback: int = 6
 ) -> nx.DiGraph:
+    """
+    Hybrid Repair-Aware Graph Construction
+    Guarantees mathematically unbroken global continuity by injecting cdist bridges.
+    """
+    from scipy.spatial.distance import cdist
+    
+    # 1. Base Density Layer: Standard message-passing radius
     g = build_graph_radius(coords, radius=radius)
-    tree = cKDTree(coords)
-    _, idx = tree.query(coords, k=min(k_fallback + 1, len(coords)))
-
-    # Ensure no node becomes a sink due to too-small radius.
-    for i in range(len(coords)):
-        if g.out_degree(i) == 0:
-            for j in idx[i][1:]:
-                if i == j:
-                    continue
-                d = float(np.linalg.norm(coords[i] - coords[j]))
-                g.add_edge(i, int(j), len=d)
+    
+    # 2. Structural Repair Layer: Guarantee a single connected manifold
+    while True:
+        components = list(nx.weakly_connected_components(g))
+        if len(components) <= 1:
+            break  # Graph is fully connected!
+            
+        c1 = list(components[0])
+        c_other = []
+        for c in components[1:]: 
+            c_other.extend(list(c))
+            
+        c1_coords = coords[c1]
+        c_other_coords = coords[c_other]
+        
+        # Analytically find the shortest gap between disconnected spatial objects
+        dists = cdist(c1_coords, c_other_coords)
+        idx1, idx2 = np.unravel_index(dists.argmin(), dists.shape)
+        
+        u = c1[idx1]
+        v = c_other[idx2]
+        d = float(dists[idx1, idx2])
+        
+        # Inject bidirectional spatial bridge to repair topology
+        g.add_edge(u, v, len=d)
+        g.add_edge(v, u, len=d)
+        
     return g
 
 
